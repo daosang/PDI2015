@@ -1,0 +1,17 @@
+Package: PDI2015
+Type: Package
+Title: Bi-clustering Biological Dataset using Co-similarity
+Version: 0.1
+Date: 2015-11-04
+Author: DAO Van Sang and Saad
+Maintainer: Dao Van Sang <clairsang@gmail.com>
+Description: A package provides fonctions of Bi-Clustering based Co-Similarity.
+Depends:
+    R (>= 2.15.0)
+Imports:
+    lpSolve,
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+Suggests: knitr
+VignetteBuilder: knitr
