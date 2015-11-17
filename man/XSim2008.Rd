@@ -32,6 +32,89 @@ res4 = XSim2008(NG20SMI$M10[[1]], NG20SMI$M10[["class"]], itr = 4)
 res5 = XSim2008(NG20SMI$NG1[[1]], NG20SMI$NG1[["class"]], itr = 4)
 res6 = XSim2008(NG20SMI$NG2[[1]], NG20SMI$NG2[["class"]], itr = 4)
 res7 = XSim2008(NG20SMI$NG3[[1]], NG20SMI$NG3[["class"]], itr = 4)
+# Exemple2: Lung Cancer (Gordon et al.2002)
+tmp = gordon$x
+idx = c()
+dem = 1
+for (i in 1:dim(tmp)[2]) {
+ if (  (abs(max(tmp[,i])/min(tmp[,i])) < 5) || (abs(max(tmp[,i]) - min(tmp[,i])) < 600)) {
+   idx[dem] = i
+   dem = dem + 1
+ }
+}
+
+tmp2 = tmp[,-idx]
+dim(tmp2)
+
+classs = as.numeric(gordon$y)
+
+# Test 4 algo:
+# 1 .XSIM 2008
+tt1 = c()
+for (i in 1:4){
+ tmp = XSim2008(tmp2, classs, itr = i)
+ tt1[i] = tmp$accuracy
+}
+
+# 4. XSIM.mod of Hussain
+tt4 = c()
+for (i in 1:4) {
+ tmp = XSim.mod(tmp2, classs, itr = i)
+ tt4[i] = tmp$accuracy
+}
+
+# Comparaison
+max(tt1)
+max(tt4)
+# Exemple 3: Colon Cancer (Alon et al.1999):
+tmp = projectPDI2015::ColonCancer[,-1]
+idx = c()
+dem = 1
+for (i in 1:dim(tmp)[2]) {
+ if (  (abs(max(tmp[,i])/min(tmp[,i])) < 15) || (abs(max(tmp[,i]) - min(tmp[,i])) < 500)) {
+  idx[dem] = i
+  dem = dem + 1
+}
+}
+
+tmp2 = tmp[,-idx]
+dim(tmp2)
+
+
+# Test 4 algo:
+# 1 .XSIM 2008
+tt1 = c()
+for (i in 1:4){
+tmp = XSim2008(tmp2, ColonCancer[,1], itr = i)
+tt1[i] = tmp$accuracy
+}
+
+# 2. XSIM 2010
+tt2 = c()
+for (i in 1:4){
+tmp = XSim2010(tmp2, ColonCancer[,1], itr = i)
+tt2[i] = tmp$accuracy
+}
+
+# 3. XSIM 2015
+tt3 = c()
+for (i in 1:4){
+tmp = XSim2015(tmp2, ColonCancer[,1], itr = i)
+ tt3[i] = tmp$accuracy
+}
+
+# 4. XSIM.mod of Hussain
+tt4 = c()
+for (i in 1:4) {
+ tmp = XSim.mod(tmp2, ColonCancer[,1], itr = i)
+ tt4[i] = tmp$accuracy
+}
+
+# Comparaison
+max(tt1)
+# max(tt2)
+max(tt3)
+max(tt4)
 }
 \references{
 Bisson G, Hussain F. \emph{X-sim - A new similarity measure for the co-clustering task}. 7th IEEE International Conference on Machine Learning and Applications (ICMLA), 11-13th Dec. 2008, San Diego, United States.

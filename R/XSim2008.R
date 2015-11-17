@@ -22,20 +22,104 @@
 #' res5 = XSim2008(NG20SMI$NG1[[1]], NG20SMI$NG1[["class"]], itr = 4)
 #' res6 = XSim2008(NG20SMI$NG2[[1]], NG20SMI$NG2[["class"]], itr = 4)
 #' res7 = XSim2008(NG20SMI$NG3[[1]], NG20SMI$NG3[["class"]], itr = 4)
+#' # Exemple2: Lung Cancer (Gordon et al.2002)
+#' tmp = gordon$x
+#'idx = c()
+#'dem = 1
+#'for (i in 1:dim(tmp)[2]) {
+#'  if (  (abs(max(tmp[,i])/min(tmp[,i])) < 5) || (abs(max(tmp[,i]) - min(tmp[,i])) < 600)) {
+#'    idx[dem] = i
+#'    dem = dem + 1
+#'  }
+#'}
+#'
+#'tmp2 = tmp[,-idx]
+#'dim(tmp2)
+#'
+#'classs = as.numeric(gordon$y)
+#'
+#'# Test 4 algo:
+#'# 1 .XSIM 2008
+#'tt1 = c()
+#'for (i in 1:4){
+#'  tmp = XSim2008(tmp2, classs, itr = i)
+#'  tt1[i] = tmp$accuracy
+#'}
+#'
+#'# 4. XSIM.mod of Hussain
+#'tt4 = c()
+#'for (i in 1:4) {
+#'  tmp = XSim.mod(tmp2, classs, itr = i)
+#'  tt4[i] = tmp$accuracy
+#'}
+#'
+#'# Comparaison
+#'max(tt1)
+#'max(tt4)
+#' # Exemple 3: Colon Cancer (Alon et al.1999):
+#'tmp = projectPDI2015::ColonCancer[,-1]
+#'idx = c()
+#'dem = 1
+#'for (i in 1:dim(tmp)[2]) {
+#'  if (  (abs(max(tmp[,i])/min(tmp[,i])) < 15) || (abs(max(tmp[,i]) - min(tmp[,i])) < 500)) {
+#'   idx[dem] = i
+#'   dem = dem + 1
+#' }
+#'}
+#'
+#'tmp2 = tmp[,-idx]
+#'dim(tmp2)
+#'
+#'
+#'# Test 4 algo:
+#'# 1 .XSIM 2008
+#'tt1 = c()
+#'for (i in 1:4){
+#' tmp = XSim2008(tmp2, ColonCancer[,1], itr = i)
+#' tt1[i] = tmp$accuracy
+#'}
+#'
+#'# 2. XSIM 2010
+#'tt2 = c()
+#'for (i in 1:4){
+#' tmp = XSim2010(tmp2, ColonCancer[,1], itr = i)
+#' tt2[i] = tmp$accuracy
+#'}
+#'
+#'# 3. XSIM 2015
+#'tt3 = c()
+#'for (i in 1:4){
+#' tmp = XSim2015(tmp2, ColonCancer[,1], itr = i)
+#'  tt3[i] = tmp$accuracy
+#'}
+#'
+#'# 4. XSIM.mod of Hussain
+#'tt4 = c()
+#'for (i in 1:4) {
+#'  tmp = XSim.mod(tmp2, ColonCancer[,1], itr = i)
+#'  tt4[i] = tmp$accuracy
+#'}
+#'
+#'# Comparaison
+#'max(tt1)
+#'# max(tt2)
+#'max(tt3)
+#'max(tt4)
+#'
 XSim2008 <- function(x, y, itr = 4) {
   temps <- proc.time()
   this.call = match.call()
-
+  
   x = as.data.frame(x)
   r_clusts = max(y) # number of row (doc) clusters
   dimM_1 = dim(x)[1]
   dimM_2 = dim(x)[2]
-
+  
   # Normalisation M par ligne. Ensuite, sauvegarder dans MR
   rS = as.matrix(rowSums(abs(x))) # sum by ligne
   rS[which(rS == 0)] <- 1       # to avoid divide by zero
   MR = as.matrix(x/rS)
-
+  
   # Normalisation M par colonne. Sauvagarder dans MC
   cS = t(as.matrix(colSums(abs(x)))) # sum by colum
   cS[which(cS == 0)] <- 1        # to avoid divide by zero
@@ -44,11 +128,11 @@ XSim2008 <- function(x, y, itr = 4) {
     tMC[,i] = cS[,i]
   }
   MC = as.matrix(x/tMC)
-
+  
   # initialize SR and SC
   SR = diag(dimM_1)
   SC = diag(dimM_2)
-
+  
   # Iterate between SR and SC
   for (ii in 1:itr) {
     print(paste("Traitement en cours l'iteration No: ", toString(ii)));
@@ -56,36 +140,36 @@ XSim2008 <- function(x, y, itr = 4) {
     for (j in 1:dimM_1) {
       SR[j,j] = 1
     }
-
+    
     SC = t(MC) %*% SR %*% MC
     for (k in 1:dimM_2) {
       SC[k,k] = 1
     }
   }
-
+  
   #Calculate the clusters, par row only.
   if (r_clusts == 0) {
     print("You cannot create 0 row clusters. please specify a value for r_clusts (>0)");
   }
-
+  
   # Hierarchical cluster analysis on a set of dissimilarities and methods for analyzing it.
   # http://stat.ethz.ch/R-manual/R-patched/library/stats/html/hclust.html
   disSR = as.matrix(1 - data.frame(SR))
-
+  
   # Hierarchical aggomerative clustering + Ward's method
   XSIM_v2008 = hclust(dist(disSR),method = "ward.D2")
   groups     = cutree(XSIM_v2008, k = r_clusts) # cut tree into "r_clusts" clusters
-
+  
   # Confusion Matrix
   matrix_confusionT = table(data.matrix(y),data.matrix(groups))
   matrix_confusion  = matrix(data.frame(matrix_confusionT)[,3],ncol = r_clusts)
   matrix_confusion  = t(matrix_confusion[nrow(matrix_confusion):1,])
-
+  
   maximum  = lp.assign(matrix_confusion,direction = "max")$objval
   accuracy =  maximum/(length(t(y))[1])
   print(accuracy)
   print("DONE.")
-
+  
   time = round(((proc.time() - temps)[3][[1]]), 4)
   print(paste("Time:",time, "(s)"))
   return(list(call = this.call, accuracy = accuracy, matrix.confusion = matrix_confusion, time = time, SR = SR, SC = SC))

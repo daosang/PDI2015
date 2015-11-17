@@ -22,6 +22,90 @@ A modification of co-similarity by Hussain for Gene Expression Data ( See in the
 \examples{
 library(PDI2015)
 XSim.mod(ColonCancer[, -1], ColonCancer[,1], itr = 4)
+
+#' # Exemple2: Lung Cancer (Gordon et al.2002)
+tmp = gordon$x
+idx = c()
+dem = 1
+for (i in 1:dim(tmp)[2]) {
+ if (  (abs(max(tmp[,i])/min(tmp[,i])) < 5) || (abs(max(tmp[,i]) - min(tmp[,i])) < 600)) {
+   idx[dem] = i
+   dem = dem + 1
+ }
+}
+
+tmp2 = tmp[,-idx]
+dim(tmp2)
+
+classs = as.numeric(gordon$y)
+
+# Test 4 algo:
+# 1 .XSIM 2008
+tt1 = c()
+for (i in 1:4){
+ tmp = XSim2008(tmp2, classs, itr = i)
+ tt1[i] = tmp$accuracy
+}
+
+# 4. XSIM.mod of Hussain
+tt4 = c()
+for (i in 1:4) {
+ tmp = XSim.mod(tmp2, classs, itr = i)
+ tt4[i] = tmp$accuracy
+}
+
+# Comparaison
+max(tt1)
+max(tt4)
+# Exemple 3: Colon Cancer (Alon et al.1999):
+tmp = projectPDI2015::ColonCancer[,-1]
+idx = c()
+dem = 1
+for (i in 1:dim(tmp)[2]) {
+ if (  (abs(max(tmp[,i])/min(tmp[,i])) < 15) || (abs(max(tmp[,i]) - min(tmp[,i])) < 500)) {
+  idx[dem] = i
+  dem = dem + 1
+}
+}
+
+tmp2 = tmp[,-idx]
+dim(tmp2)
+
+
+# Test 4 algo:
+# 1 .XSIM 2008
+tt1 = c()
+for (i in 1:4){
+tmp = XSim2008(tmp2, ColonCancer[,1], itr = i)
+tt1[i] = tmp$accuracy
+}
+
+# 2. XSIM 2010
+tt2 = c()
+for (i in 1:4){
+tmp = XSim2010(tmp2, ColonCancer[,1], itr = i)
+tt2[i] = tmp$accuracy
+}
+
+# 3. XSIM 2015
+tt3 = c()
+for (i in 1:4){
+tmp = XSim2015(tmp2, ColonCancer[,1], itr = i)
+ tt3[i] = tmp$accuracy
+}
+
+# 4. XSIM.mod of Hussain
+tt4 = c()
+for (i in 1:4) {
+ tmp = XSim.mod(tmp2, ColonCancer[,1], itr = i)
+ tt4[i] = tmp$accuracy
+}
+
+# Comparaison
+max(tt1)
+# max(tt2)
+max(tt3)
+max(tt4)
 }
 \references{
 Hussain S.F. \emph{Bi-Clustering Gene Expression Data Using Co-Similarity}, 7th International Conference on Advanced Data Mining and Applications (ADMA), 16-19th Dec. 2011, Beijing, China.
