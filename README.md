@@ -1,5 +1,5 @@
 # PDI2015
-Bi-Clustering using Co-Similarity
+Bi-Clustering Data Using Co- similarity : Application on Metagenomics
 
 # Installation
 '' You can install the latest package version by typing the following at the R console:
